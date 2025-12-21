@@ -1,13 +1,25 @@
 {
-  "name": "nitro-app",
-  "private": true,
+  "name": "waelio-api",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Waelio API - Nitro TypeScript with OpenAPI",
   "scripts": {
-    "build": "nitro build",
     "dev": "nitro dev",
-    "preview": "node .output/server/index.mjs"
+    "build": "nitro build",
+    "start": "node .output/server/index.mjs",
+    "preview": "node .output/server/index.mjs",
+    "lint": "eslint src --ext .ts",
+    "type-check": "tsc --noEmit"
   },
-  "devDependencies": {
+  "dependencies": {
     "h3": "^1.15.4",
     "nitropack": "^2.12.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
   }
 }

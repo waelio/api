@@ -1,5 +1,9 @@
-import { defineNitroConfig } from "nitropack/config";
+import { defineNitroConfig } from 'nitropack';
 
 export default defineNitroConfig({
-  srcDir: ".",
+  compatibilityDate: '2025-12-20',
+  srcDir: 'src',
+  typescript: {
+    strict: true,
+  },
 });
