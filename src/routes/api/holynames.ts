@@ -1,5 +1,5 @@
 import { defineEventHandler, getQuery, handleCors } from "h3";
-import gnames from "../data/gnames.json";
+import gnames from "../../../data/gnames.json";
 
 export default defineEventHandler((event) => {
     if (handleCors(event, { origin: "*" })) {
