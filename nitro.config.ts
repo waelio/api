@@ -1,9 +1,5 @@
-import { defineNitroConfig } from 'nitropack';
+import { defineNitroConfig } from "nitropack/config";
 
 export default defineNitroConfig({
-  compatibilityDate: '2025-12-20',
-  srcDir: 'src',
-  typescript: {
-    strict: true,
-  },
+  preset: "netlify",
 });
