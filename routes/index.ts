@@ -1,3 +1,3 @@
 export default eventHandler(() => {
-  return { status: 'OK', message: 'Nitro server is running!' }
-})
+  return "<h1>Welcome to the API</h1>";
+});
