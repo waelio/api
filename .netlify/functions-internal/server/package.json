@@ -1,0 +1,10 @@
+{
+  "name": "waelio-api-prod",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "rou3": "0.7.12",
+    "srvx": "0.9.8"
+  }
+}

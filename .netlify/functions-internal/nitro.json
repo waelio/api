@@ -1,0 +1,17 @@
+{
+  "date": "2025-12-23T11:36:06.789Z",
+  "preset": "netlify-legacy",
+  "framework": {
+    "name": "nitro",
+    "version": ""
+  },
+  "versions": {
+    "nitro": "2.12.8"
+  },
+  "commands": {},
+  "config": {
+    "awsLambda": {
+      "streaming": false
+    }
+  }
+}

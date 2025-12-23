@@ -3,6 +3,15 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Waelio API - Nitro TypeScript with OpenAPI",
+  "packageManager": "pnpm@9.15.0",
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "esbuild"
+    ],
+    "onlyBuiltDependencies": [
+      "@parcel/watcher"
+    ]
+  },
   "scripts": {
     "dev": "nitro dev",
     "build": "nitro build",
@@ -14,9 +23,9 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
-    "h3": "^1.15.4",
+    "h3": "^2.0.1-rc.6",
     "netlify-cli": "^23.13.0",
-    "nitropack": "^2.12.4"
+    "nitropack": "^2.12.9"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.0",
