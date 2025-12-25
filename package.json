@@ -23,7 +23,6 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
-    "h3": "^2.0.1-rc.6",
     "netlify-cli": "^23.13.0",
     "nitropack": "^2.12.9"
   },
