@@ -1,0 +1,55 @@
+{
+    "id": "/",
+    "name": "Waelio API",
+    "short_name": "Waelio",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "display_override": [
+        "standalone",
+        "fullscreen",
+        "minimal-ui"
+    ],
+    "background_color": "#667eea",
+    "theme_color": "#667eea",
+    "description": "PWA shell for the Waelio API",
+    "categories": [
+        "utilities",
+        "productivity",
+        "developer tools"
+    ],
+    "icons": [
+        {
+            "src": "/icons/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon.svg",
+            "sizes": "192x192",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon.svg",
+            "sizes": "512x512",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Health",
+            "short_name": "Health",
+            "description": "Check API health",
+            "url": "/api/health"
+        },
+        {
+            "name": "OpenAPI",
+            "short_name": "Docs",
+            "description": "OpenAPI schema",
+            "url": "/api/_openapi"
+        }
+    ]
+}
