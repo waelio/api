@@ -1,7 +1,9 @@
-import { defineEventHandler, readBody } from 'h3'
+import { defineEventHandler, handleCors, readBody } from 'h3'
 import { authConfigError, generateOtp, isValidEmail } from '../../server/auth'
 
 export default defineEventHandler(async (event) => {
+    if (handleCors(event, { origin: '*' })) return
+
     const configErr = authConfigError()
     if (configErr) {
         event.node.res.statusCode = 503
