@@ -9,8 +9,9 @@ import 'node:path';
 import 'node:crypto';
 
 const origin = ["https://peace2074.com", "https://www.peace2074.com"];
+const allowedHeaders = ["content-type"];
 const me_get = defineEventHandler((event) => {
-  if (handleCors(event, { origin, methods: ["GET", "OPTIONS"], credentials: true })) return;
+  if (handleCors(event, { origin, methods: ["GET", "OPTIONS"], credentials: true, allowHeaders: allowedHeaders })) return;
   const user = currentUserFromEvent(event);
   if (!user) {
     event.node.res.statusCode = 401;

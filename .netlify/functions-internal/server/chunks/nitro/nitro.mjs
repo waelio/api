@@ -4645,9 +4645,12 @@ const _lazy_uVBcl4 = () => import('../routes/api/_openapi.get.mjs');
 const _lazy_asl0Hg = () => import('../routes/api/health.get.mjs');
 const _lazy_BDKtgg = () => import('../routes/api/holynames.mjs');
 const _lazy_Asj4D6 = () => import('../routes/api/quran.mjs');
+const _lazy_BFmgUD = () => import('../routes/auth/logout.options.mjs');
 const _lazy_xt5QgJ = () => import('../routes/auth/logout.post.mjs');
 const _lazy_DZ5ijl = () => import('../routes/auth/me.get.mjs');
+const _lazy_doT8mw = () => import('../routes/auth/request-otp.options.mjs');
 const _lazy_5rmDai = () => import('../routes/auth/request-otp.post.mjs');
+const _lazy_OPOyxu = () => import('../routes/auth/verify-otp.options.mjs');
 const _lazy_gcQEY2 = () => import('../routes/auth/verify-otp.post.mjs');
 const _lazy_fDK4qh = () => import('../routes/index.mjs');
 const _lazy_uKpvcX = () => import('../routes/quran.mjs');
@@ -4657,9 +4660,12 @@ const handlers = [
   { route: '/api/health', handler: _lazy_asl0Hg, lazy: true, middleware: false, method: "get" },
   { route: '/api/holynames', handler: _lazy_BDKtgg, lazy: true, middleware: false, method: undefined },
   { route: '/api/quran', handler: _lazy_Asj4D6, lazy: true, middleware: false, method: undefined },
+  { route: '/auth/logout', handler: _lazy_BFmgUD, lazy: true, middleware: false, method: "options" },
   { route: '/auth/logout', handler: _lazy_xt5QgJ, lazy: true, middleware: false, method: "post" },
   { route: '/auth/me', handler: _lazy_DZ5ijl, lazy: true, middleware: false, method: "get" },
+  { route: '/auth/request-otp', handler: _lazy_doT8mw, lazy: true, middleware: false, method: "options" },
   { route: '/auth/request-otp', handler: _lazy_5rmDai, lazy: true, middleware: false, method: "post" },
+  { route: '/auth/verify-otp', handler: _lazy_OPOyxu, lazy: true, middleware: false, method: "options" },
   { route: '/auth/verify-otp', handler: _lazy_gcQEY2, lazy: true, middleware: false, method: "post" },
   { route: '/', handler: _lazy_fDK4qh, lazy: true, middleware: false, method: undefined },
   { route: '/quran', handler: _lazy_uKpvcX, lazy: true, middleware: false, method: undefined }
