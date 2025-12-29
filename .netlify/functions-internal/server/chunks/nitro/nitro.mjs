@@ -92,7 +92,7 @@ function encodeQueryValue(input) {
 function encodeQueryKey(text) {
   return encodeQueryValue(text).replace(EQUAL_RE, "%3D");
 }
-function decode(text = "") {
+function decode$1(text = "") {
   try {
     return decodeURIComponent("" + text);
   } catch {
@@ -100,10 +100,10 @@ function decode(text = "") {
   }
 }
 function decodeQueryKey(text) {
-  return decode(text.replace(PLUS_RE, " "));
+  return decode$1(text.replace(PLUS_RE, " "));
 }
 function decodeQueryValue(text) {
-  return decode(text.replace(PLUS_RE, " "));
+  return decode$1(text.replace(PLUS_RE, " "));
 }
 
 function parseQuery(parametersString = "") {
@@ -210,7 +210,7 @@ function withQuery(input, query) {
   parsed.search = stringifyQuery(mergedQuery);
   return stringifyParsedURL(parsed);
 }
-function getQuery(input) {
+function getQuery$1(input) {
   return parseQuery(parseURL(input).search);
 }
 function isEmptyURL(url) {
@@ -284,6 +284,211 @@ function stringifyParsedURL(parsed) {
   const host = parsed.host || "";
   const proto = parsed.protocol || parsed[protocolRelative] ? (parsed.protocol || "") + "//" : "";
   return proto + auth + host + pathname + search + hash;
+}
+
+function parse(str, options) {
+  if (typeof str !== "string") {
+    throw new TypeError("argument str must be a string");
+  }
+  const obj = {};
+  const opt = {};
+  const dec = opt.decode || decode;
+  let index = 0;
+  while (index < str.length) {
+    const eqIdx = str.indexOf("=", index);
+    if (eqIdx === -1) {
+      break;
+    }
+    let endIdx = str.indexOf(";", index);
+    if (endIdx === -1) {
+      endIdx = str.length;
+    } else if (endIdx < eqIdx) {
+      index = str.lastIndexOf(";", eqIdx - 1) + 1;
+      continue;
+    }
+    const key = str.slice(index, eqIdx).trim();
+    if (opt?.filter && !opt?.filter(key)) {
+      index = endIdx + 1;
+      continue;
+    }
+    if (void 0 === obj[key]) {
+      let val = str.slice(eqIdx + 1, endIdx).trim();
+      if (val.codePointAt(0) === 34) {
+        val = val.slice(1, -1);
+      }
+      obj[key] = tryDecode(val, dec);
+    }
+    index = endIdx + 1;
+  }
+  return obj;
+}
+function decode(str) {
+  return str.includes("%") ? decodeURIComponent(str) : str;
+}
+function tryDecode(str, decode2) {
+  try {
+    return decode2(str);
+  } catch {
+    return str;
+  }
+}
+
+const fieldContentRegExp = /^[\u0009\u0020-\u007E\u0080-\u00FF]+$/;
+function serialize$1(name, value, options) {
+  const opt = options || {};
+  const enc = opt.encode || encodeURIComponent;
+  if (typeof enc !== "function") {
+    throw new TypeError("option encode is invalid");
+  }
+  if (!fieldContentRegExp.test(name)) {
+    throw new TypeError("argument name is invalid");
+  }
+  const encodedValue = enc(value);
+  if (encodedValue && !fieldContentRegExp.test(encodedValue)) {
+    throw new TypeError("argument val is invalid");
+  }
+  let str = name + "=" + encodedValue;
+  if (void 0 !== opt.maxAge && opt.maxAge !== null) {
+    const maxAge = opt.maxAge - 0;
+    if (Number.isNaN(maxAge) || !Number.isFinite(maxAge)) {
+      throw new TypeError("option maxAge is invalid");
+    }
+    str += "; Max-Age=" + Math.floor(maxAge);
+  }
+  if (opt.domain) {
+    if (!fieldContentRegExp.test(opt.domain)) {
+      throw new TypeError("option domain is invalid");
+    }
+    str += "; Domain=" + opt.domain;
+  }
+  if (opt.path) {
+    if (!fieldContentRegExp.test(opt.path)) {
+      throw new TypeError("option path is invalid");
+    }
+    str += "; Path=" + opt.path;
+  }
+  if (opt.expires) {
+    if (!isDate(opt.expires) || Number.isNaN(opt.expires.valueOf())) {
+      throw new TypeError("option expires is invalid");
+    }
+    str += "; Expires=" + opt.expires.toUTCString();
+  }
+  if (opt.httpOnly) {
+    str += "; HttpOnly";
+  }
+  if (opt.secure) {
+    str += "; Secure";
+  }
+  if (opt.priority) {
+    const priority = typeof opt.priority === "string" ? opt.priority.toLowerCase() : opt.priority;
+    switch (priority) {
+      case "low": {
+        str += "; Priority=Low";
+        break;
+      }
+      case "medium": {
+        str += "; Priority=Medium";
+        break;
+      }
+      case "high": {
+        str += "; Priority=High";
+        break;
+      }
+      default: {
+        throw new TypeError("option priority is invalid");
+      }
+    }
+  }
+  if (opt.sameSite) {
+    const sameSite = typeof opt.sameSite === "string" ? opt.sameSite.toLowerCase() : opt.sameSite;
+    switch (sameSite) {
+      case true: {
+        str += "; SameSite=Strict";
+        break;
+      }
+      case "lax": {
+        str += "; SameSite=Lax";
+        break;
+      }
+      case "strict": {
+        str += "; SameSite=Strict";
+        break;
+      }
+      case "none": {
+        str += "; SameSite=None";
+        break;
+      }
+      default: {
+        throw new TypeError("option sameSite is invalid");
+      }
+    }
+  }
+  if (opt.partitioned) {
+    str += "; Partitioned";
+  }
+  return str;
+}
+function isDate(val) {
+  return Object.prototype.toString.call(val) === "[object Date]" || val instanceof Date;
+}
+
+function parseSetCookie(setCookieValue, options) {
+  const parts = (setCookieValue || "").split(";").filter((str) => typeof str === "string" && !!str.trim());
+  const nameValuePairStr = parts.shift() || "";
+  const parsed = _parseNameValuePair(nameValuePairStr);
+  const name = parsed.name;
+  let value = parsed.value;
+  try {
+    value = options?.decode === false ? value : (options?.decode || decodeURIComponent)(value);
+  } catch {
+  }
+  const cookie = {
+    name,
+    value
+  };
+  for (const part of parts) {
+    const sides = part.split("=");
+    const partKey = (sides.shift() || "").trimStart().toLowerCase();
+    const partValue = sides.join("=");
+    switch (partKey) {
+      case "expires": {
+        cookie.expires = new Date(partValue);
+        break;
+      }
+      case "max-age": {
+        cookie.maxAge = Number.parseInt(partValue, 10);
+        break;
+      }
+      case "secure": {
+        cookie.secure = true;
+        break;
+      }
+      case "httponly": {
+        cookie.httpOnly = true;
+        break;
+      }
+      case "samesite": {
+        cookie.sameSite = partValue;
+        break;
+      }
+      default: {
+        cookie[partKey] = partValue;
+      }
+    }
+  }
+  return cookie;
+}
+function _parseNameValuePair(nameValuePairStr) {
+  let name = "";
+  let value = "";
+  const nameValueArr = nameValuePairStr.split("=");
+  if (nameValueArr.length > 1) {
+    name = nameValueArr.shift();
+    value = nameValueArr.join("=");
+  } else {
+    value = nameValuePairStr;
+  }
+  return { name, value };
 }
 
 const NODE_TYPES = {
@@ -694,6 +899,10 @@ function sendError(event, error, debug) {
 function isError(input) {
   return input?.constructor?.__h3_error__ === true;
 }
+
+function getQuery(event) {
+  return getQuery$1(event.path || "");
+}
 function isMethod(event, expected, allowHead) {
   if (typeof expected === "string") {
     if (event.method === expected) {
@@ -719,6 +928,11 @@ function getRequestHeaders(event) {
     _headers[key] = Array.isArray(val) ? val.filter(Boolean).join(", ") : val;
   }
   return _headers;
+}
+function getRequestHeader(event, name) {
+  const headers = getRequestHeaders(event);
+  const value = headers[name.toLowerCase()];
+  return value;
 }
 function getRequestHost(event, opts = {}) {
   if (opts.xForwardedHost) {
@@ -747,6 +961,7 @@ function getRequestURL(event, opts = {}) {
 }
 
 const RawBodySymbol = Symbol.for("h3RawBody");
+const ParsedBodySymbol = Symbol.for("h3ParsedBody");
 const PayloadMethods$1 = ["PATCH", "POST", "PUT", "DELETE"];
 function readRawBody(event, encoding = "utf8") {
   assertMethod(event, PayloadMethods$1);
@@ -814,6 +1029,26 @@ function readRawBody(event, encoding = "utf8") {
   const result = encoding ? promise.then((buff) => buff.toString(encoding)) : promise;
   return result;
 }
+async function readBody(event, options = {}) {
+  const request = event.node.req;
+  if (hasProp(request, ParsedBodySymbol)) {
+    return request[ParsedBodySymbol];
+  }
+  const contentType = request.headers["content-type"] || "";
+  const body = await readRawBody(event);
+  let parsed;
+  if (contentType === "application/json") {
+    parsed = _parseJSON(body, options.strict ?? true);
+  } else if (contentType.startsWith("application/x-www-form-urlencoded")) {
+    parsed = _parseURLEncodedBody(body);
+  } else if (contentType.startsWith("text/")) {
+    parsed = body;
+  } else {
+    parsed = _parseJSON(body, options.strict ?? false);
+  }
+  request[ParsedBodySymbol] = parsed;
+  return parsed;
+}
 function getRequestWebStream(event) {
   if (!PayloadMethods$1.includes(event.method)) {
     return;
@@ -847,6 +1082,35 @@ function getRequestWebStream(event) {
       });
     }
   });
+}
+function _parseJSON(body = "", strict) {
+  if (!body) {
+    return void 0;
+  }
+  try {
+    return destr(body, { strict });
+  } catch {
+    throw createError$1({
+      statusCode: 400,
+      statusMessage: "Bad Request",
+      message: "Invalid JSON body"
+    });
+  }
+}
+function _parseURLEncodedBody(body) {
+  const form = new URLSearchParams(body);
+  const parsedForm = /* @__PURE__ */ Object.create(null);
+  for (const [key, value] of form.entries()) {
+    if (hasProp(parsedForm, key)) {
+      if (!Array.isArray(parsedForm[key])) {
+        parsedForm[key] = [parsedForm[key]];
+      }
+      parsedForm[key].push(value);
+    } else {
+      parsedForm[key] = value;
+    }
+  }
+  return parsedForm;
 }
 
 function handleCacheHeaders(event, opts) {
@@ -901,6 +1165,47 @@ function sanitizeStatusCode(statusCode, defaultStatusCode = 200) {
     return defaultStatusCode;
   }
   return statusCode;
+}
+
+function getDistinctCookieKey(name, opts) {
+  return [name, opts.domain || "", opts.path || "/"].join(";");
+}
+
+function parseCookies(event) {
+  return parse(event.node.req.headers.cookie || "");
+}
+function getCookie(event, name) {
+  return parseCookies(event)[name];
+}
+function setCookie(event, name, value, serializeOptions = {}) {
+  if (!serializeOptions.path) {
+    serializeOptions = { path: "/", ...serializeOptions };
+  }
+  const newCookie = serialize$1(name, value, serializeOptions);
+  const currentCookies = splitCookiesString(
+    event.node.res.getHeader("set-cookie")
+  );
+  if (currentCookies.length === 0) {
+    event.node.res.setHeader("set-cookie", newCookie);
+    return;
+  }
+  const newCookieKey = getDistinctCookieKey(name, serializeOptions);
+  event.node.res.removeHeader("set-cookie");
+  for (const cookie of currentCookies) {
+    const parsed = parseSetCookie(cookie);
+    const key = getDistinctCookieKey(parsed.name, parsed);
+    if (key === newCookieKey) {
+      continue;
+    }
+    event.node.res.appendHeader("set-cookie", cookie);
+  }
+  event.node.res.appendHeader("set-cookie", newCookie);
+}
+function deleteCookie(event, name, serializeOptions) {
+  setCookie(event, name, "", {
+    ...serializeOptions,
+    maxAge: 0
+  });
 }
 function splitCookiesString(cookiesString) {
   if (Array.isArray(cookiesString)) {
@@ -1024,6 +1329,23 @@ function setResponseHeaders(event, headers) {
   }
 }
 const setHeaders = setResponseHeaders;
+function appendResponseHeaders(event, headers) {
+  for (const [name, value] of Object.entries(headers)) {
+    appendResponseHeader(event, name, value);
+  }
+}
+const appendHeaders = appendResponseHeaders;
+function appendResponseHeader(event, name, value) {
+  let current = event.node.res.getHeader(name);
+  if (!current) {
+    event.node.res.setHeader(name, value);
+    return;
+  }
+  if (!Array.isArray(current)) {
+    current = [current.toString()];
+  }
+  event.node.res.setHeader(name, [...current, value]);
+}
 function isStream(data) {
   if (!data || typeof data !== "object") {
     return false;
@@ -1110,6 +1432,119 @@ function sendWebResponse(event, response) {
     return;
   }
   return sendStream(event, response.body);
+}
+
+function resolveCorsOptions(options = {}) {
+  const defaultOptions = {
+    origin: "*",
+    methods: "*",
+    allowHeaders: "*",
+    exposeHeaders: "*",
+    credentials: false,
+    maxAge: false,
+    preflight: {
+      statusCode: 204
+    }
+  };
+  return defu(options, defaultOptions);
+}
+function isPreflightRequest(event) {
+  const origin = getRequestHeader(event, "origin");
+  const accessControlRequestMethod = getRequestHeader(
+    event,
+    "access-control-request-method"
+  );
+  return event.method === "OPTIONS" && !!origin && !!accessControlRequestMethod;
+}
+function isCorsOriginAllowed(origin, options) {
+  const { origin: originOption } = options;
+  if (!origin || !originOption || originOption === "*" || originOption === "null") {
+    return true;
+  }
+  if (Array.isArray(originOption)) {
+    return originOption.some((_origin) => {
+      if (_origin instanceof RegExp) {
+        return _origin.test(origin);
+      }
+      return origin === _origin;
+    });
+  }
+  return originOption(origin);
+}
+function createOriginHeaders(event, options) {
+  const { origin: originOption } = options;
+  const origin = getRequestHeader(event, "origin");
+  if (!origin || !originOption || originOption === "*") {
+    return { "access-control-allow-origin": "*" };
+  }
+  if (typeof originOption === "string") {
+    return { "access-control-allow-origin": originOption, vary: "origin" };
+  }
+  return isCorsOriginAllowed(origin, options) ? { "access-control-allow-origin": origin, vary: "origin" } : {};
+}
+function createMethodsHeaders(options) {
+  const { methods } = options;
+  if (!methods) {
+    return {};
+  }
+  if (methods === "*") {
+    return { "access-control-allow-methods": "*" };
+  }
+  return methods.length > 0 ? { "access-control-allow-methods": methods.join(",") } : {};
+}
+function createCredentialsHeaders(options) {
+  const { credentials } = options;
+  if (credentials) {
+    return { "access-control-allow-credentials": "true" };
+  }
+  return {};
+}
+function createAllowHeaderHeaders(event, options) {
+  const { allowHeaders } = options;
+  if (!allowHeaders || allowHeaders === "*" || allowHeaders.length === 0) {
+    const header = getRequestHeader(event, "access-control-request-headers");
+    return header ? {
+      "access-control-allow-headers": header,
+      vary: "access-control-request-headers"
+    } : {};
+  }
+  return {
+    "access-control-allow-headers": allowHeaders.join(","),
+    vary: "access-control-request-headers"
+  };
+}
+function createExposeHeaders(options) {
+  const { exposeHeaders } = options;
+  if (!exposeHeaders) {
+    return {};
+  }
+  if (exposeHeaders === "*") {
+    return { "access-control-expose-headers": exposeHeaders };
+  }
+  return { "access-control-expose-headers": exposeHeaders.join(",") };
+}
+function appendCorsPreflightHeaders(event, options) {
+  appendHeaders(event, createOriginHeaders(event, options));
+  appendHeaders(event, createCredentialsHeaders(options));
+  appendHeaders(event, createExposeHeaders(options));
+  appendHeaders(event, createMethodsHeaders(options));
+  appendHeaders(event, createAllowHeaderHeaders(event, options));
+}
+function appendCorsHeaders(event, options) {
+  appendHeaders(event, createOriginHeaders(event, options));
+  appendHeaders(event, createCredentialsHeaders(options));
+  appendHeaders(event, createExposeHeaders(options));
+}
+
+function handleCors(event, options) {
+  const _options = resolveCorsOptions(options);
+  if (isPreflightRequest(event)) {
+    appendCorsPreflightHeaders(event, options);
+    sendNoContent(event, _options.preflight.statusCode);
+    return true;
+  }
+  appendCorsHeaders(event, options);
+  return false;
 }
 
 const PayloadMethods = /* @__PURE__ */ new Set(["PATCH", "POST", "PUT", "DELETE"]);
@@ -4052,7 +4487,7 @@ function createRouteRulesHandler(ctx) {
         }
         target = joinURL(target.slice(0, -3), targetPath);
       } else if (event.path.includes("?")) {
-        const query = getQuery(event.path);
+        const query = getQuery$1(event.path);
         target = withQuery(target, query);
       }
       return sendRedirect(event, target, routeRules.redirect.statusCode);
@@ -4067,7 +4502,7 @@ function createRouteRulesHandler(ctx) {
         }
         target = joinURL(target.slice(0, -3), targetPath);
       } else if (event.path.includes("?")) {
-        const query = getQuery(event.path);
+        const query = getQuery$1(event.path);
         target = withQuery(target, query);
       }
       return proxyRequest(event, target, {
@@ -4206,10 +4641,26 @@ const plugins = [
   
 ];
 
+const _lazy_uVBcl4 = () => import('../routes/api/_openapi.get.mjs');
+const _lazy_asl0Hg = () => import('../routes/api/health.get.mjs');
+const _lazy_BDKtgg = () => import('../routes/api/holynames.mjs');
+const _lazy_Asj4D6 = () => import('../routes/api/quran.mjs');
+const _lazy_xt5QgJ = () => import('../routes/auth/logout.post.mjs');
+const _lazy_DZ5ijl = () => import('../routes/auth/me.get.mjs');
+const _lazy_5rmDai = () => import('../routes/auth/request-otp.post.mjs');
+const _lazy_gcQEY2 = () => import('../routes/auth/verify-otp.post.mjs');
 const _lazy_fDK4qh = () => import('../routes/index.mjs');
 const _lazy_uKpvcX = () => import('../routes/quran.mjs');
 
 const handlers = [
+  { route: '/api/_openapi', handler: _lazy_uVBcl4, lazy: true, middleware: false, method: "get" },
+  { route: '/api/health', handler: _lazy_asl0Hg, lazy: true, middleware: false, method: "get" },
+  { route: '/api/holynames', handler: _lazy_BDKtgg, lazy: true, middleware: false, method: undefined },
+  { route: '/api/quran', handler: _lazy_Asj4D6, lazy: true, middleware: false, method: undefined },
+  { route: '/auth/logout', handler: _lazy_xt5QgJ, lazy: true, middleware: false, method: "post" },
+  { route: '/auth/me', handler: _lazy_DZ5ijl, lazy: true, middleware: false, method: "get" },
+  { route: '/auth/request-otp', handler: _lazy_5rmDai, lazy: true, middleware: false, method: "post" },
+  { route: '/auth/verify-otp', handler: _lazy_gcQEY2, lazy: true, middleware: false, method: "post" },
   { route: '/', handler: _lazy_fDK4qh, lazy: true, middleware: false, method: undefined },
   { route: '/quran', handler: _lazy_uKpvcX, lazy: true, middleware: false, method: undefined }
 ];
@@ -4401,5 +4852,5 @@ function getCacheHeaders(url) {
   return {};
 }
 
-export { eventHandler as e, handler as h };
+export { deleteCookie as a, getCookie as b, handler as c, defineEventHandler as d, eventHandler as e, getQuery as g, handleCors as h, readBody as r, setCookie as s };
 //# sourceMappingURL=nitro.mjs.map
