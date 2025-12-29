@@ -2,9 +2,10 @@ import { defineEventHandler, handleCors } from 'h3'
 import { currentUserFromEvent } from '../../server/auth'
 
 const origin = ['https://peace2074.com', 'https://www.peace2074.com']
+const allowedHeaders = ['content-type']
 
 export default defineEventHandler((event) => {
-    if (handleCors(event, { origin, methods: ['GET', 'OPTIONS'], credentials: true })) return
+    if (handleCors(event, { origin, methods: ['GET', 'OPTIONS'], credentials: true, allowHeaders: allowedHeaders })) return
 
     const user = currentUserFromEvent(event)
     if (!user) {

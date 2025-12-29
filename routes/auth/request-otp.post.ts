@@ -2,9 +2,10 @@ import { defineEventHandler, handleCors, readBody } from 'h3'
 import { authConfigError, generateOtp, isValidEmail } from '../../server/auth'
 
 const origin = ['https://peace2074.com', 'https://www.peace2074.com']
+const allowedHeaders = ['content-type']
 
 export default defineEventHandler(async (event) => {
-    if (handleCors(event, { origin, methods: ['POST', 'OPTIONS'], credentials: true })) return
+    if (handleCors(event, { origin, methods: ['POST', 'OPTIONS'], credentials: true, allowHeaders: allowedHeaders })) return
 
     const configErr = authConfigError()
     if (configErr) {
