@@ -1,43 +1,31 @@
 # AI coding guidelines for waelio-api
 
-## Overview
+## What lives where
+- Backend is Nitro (`nitropack`) targeting Netlify (`nitro.config.ts`, `netlify.toml`); canonical runtime entrypoints are in `routes/` (and `routes/api/`). Legacy mirrors sit in `src/routes/**`—touch only when syncing.
+- UI is a minimal Vue 3 + Vite shell in `frontend/`; Vite dev runs on `3000` and proxies `/api`, `/openapi.html`, `/icons`, `/manifest.webmanifest`, `/sw.js` to the Nitro dev server on `4000` (`frontend/vite.config.ts`).
+- Static landing/docs come from `public/` (e.g., `public/index.html`, `public/openapi.html`) and are also served by Netlify alongside functions.
+- Data sources: Quran text and metadata under `data/` (authoritative) with a mirrored legacy copy in `shared/data/`; keep both in sync when editing data files.
 
-- Backend: Nitro (`nitropack`) TypeScript API targeting Netlify (`nitro.config.ts`, `netlify.toml`); runtime entrypoints live under `routes/` and `routes/api/`.
-- UI: Vue 3 + Vite shell in `frontend/` that proxies to the API, plus static landing/docs pages in `public/`.
-- Data: Quran and holy names JSON under `data/` (runtime source) with a mirrored legacy copy in `shared/data/`; keep them in sync only when modifying data.
-- Duplicated routes exist under `src/routes/**`; treat `routes/**` as canonical and mirror changes only when editing existing endpoints there.
+## Backend patterns that matter
+- Define handlers with `defineEventHandler` in `routes/api/<name>.ts` or `.get.ts` (see `routes/api/health.get.ts`, `routes/api/quran.ts`). Use `getQuery(event)` and normalize string/array inputs (e.g., `const idx = Number(Array.isArray(s) ? s[0] : s)`).
+- Public JSON endpoints use permissive CORS (`handleCors(event, { origin: '*' })`) and must early-return if CORS responds (`routes/api/holynames.ts`). Auth endpoints instead whitelist origins `https://peace2074.com` (+ www) and set `credentials: true` via paired `.options.ts` handlers.
+- Data shaping leans on types in `shared/types/index.ts` (`QDBI`, `aya_interface`); cast responses accordingly. `/api/quran` builds chapter objects from `data/editions/en.json` + `data/quran.json` and supports `?s=<id>` for single chapter.
+- OpenAPI contract is served from `routes/api/_openapi.get.ts` and consumed by `public/openapi.html` plus tests; keep it updated whenever routes change.
 
-## Backend patterns
-
-- Define endpoints with `defineEventHandler` in `routes/api/<name>.ts` or `.get.ts` (see `routes/api/health.get.ts`, `routes/api/quran.ts`).
-- Query handling: use `getQuery(event)` and normalize string/array inputs like `const s = params?.s; const id = Number(Array.isArray(s) ? s[0] : s)` (see `routes/api/quran.ts`).
-- CORS: for public JSON, call `handleCors(event, { origin: '*' })` and early-return when it handles the response (see `routes/api/holynames.ts`).
-- Data shaping: rely on types in `shared/types/index.ts` (e.g., `QDBI`, `aya_interface`) and cast responses accordingly.
-
-## Contracts enforced by tests
-
-- `/api/health` → `{ status: 'healthy', timestamp: <ISO string> }` (`tests/e2e/health.spec.ts`).
-- `/api/holynames` → array from `data/gnames.json`; supports `?name=` substring filter (`tests/e2e/holynames.spec.ts`).
-- `/api/quran` → array of chapters (or single when `?s=<id>`), shaped like `QDBI` (`tests/e2e/quran.spec.ts`).
-- `/api/_openapi` → serves static OpenAPI 3.1 spec consumed by `/openapi.html` and tests (`tests/e2e/openapi.spec.ts`); update handler and docs links when adding routes.
+## Auth specifics
+- Auth utilities live in `server/auth.ts` (OTP generation, HMAC-signed session cookies). Requires `AUTH_SECRET` in environment (see `.env` sample). OTP codes are only returned in responses when `NODE_ENV !== 'production'`; production just logs server-side.
+- Session cookie name: `waelio_session`, `sameSite:lax`, `httpOnly`, `secure` in production. `routes/auth/*` enforce origin allowlists and provide `request-otp`, `verify-otp`, `me`, and `logout` handlers with matching `.options.ts` for CORS preflight.
 
 ## Frontend & docs hooks
+- Landing route (`routes/index.ts`) returns a simple HTML string; the user-facing landing page is `public/index.html`, which fetches `/api/health` and links docs/endpoints. If endpoints move, update both `public/index.html` and `frontend/src/App.vue` (iframe to `/openapi.html`).
+- Theme toggle writes `data-theme` on `document.documentElement` in both `public/index.html` and `public/openapi.html`; reuse this convention for new pages.
 
-- Landing page at `/` comes from `public/index.html` (plus `routes/index.ts`); it fetches `/api/health` and links to main endpoints—keep URLs stable.
-- Vue app (`frontend/src/App.vue`) calls the same APIs and embeds docs via `<iframe src="/openapi.html">`; update both the Vue app and `public/index.html` if endpoints move.
-- Theme toggle pattern writes `data-theme` on `document.documentElement` in `public/index.html` and `public/openapi.html`; reuse this convention.
-
-## Local dev & testing
-
-- Use `pnpm` only. Key scripts:
-  - `pnpm dev` runs both servers: Nitro API on `http://localhost:4000` (`dev:api`) and Vite UI on `http://localhost:3000` (`dev:ui`, proxies `/api` to 4000).
-  - `pnpm build` builds the Netlify-ready output; `pnpm start` / `pnpm preview` run from `.output`.
-  - `pnpm test:e2e` (or `pnpm test:e2e:ui`) runs Playwright; it autostarts `pnpm dev` and targets `http://localhost:3000` per `playwright.config.ts`.
-- Frontend-only work: run scripts inside `frontend/`; Vite dev/previews also use port `3000`.
+## Dev, test, deploy flow
+- Use `pnpm` only. Root scripts: `pnpm dev` (runs `dev:api` on 4000 and `dev:ui` on 3000), `pnpm build` (Nitro Netlify output), `pnpm start`/`pnpm preview` (serve `.output/server/index.mjs`). Frontend-only: run `pnpm dev|build|preview` inside `frontend/`.
+- E2E via Playwright: `pnpm test:e2e` (or `test:e2e:ui`) autostarts `pnpm dev` and hits `http://localhost:3000` per `playwright.config.ts`. Contract expectations live in `tests/e2e/*.spec.ts` (health, holynames filter, quran query, OpenAPI).
+- Netlify deploy uses `pnpm build`, publishes `public`, and functions from `.netlify/functions-internal`; environment sets `NITRO_PRESET=netlify`, `NODE_VERSION=20`.
 
 ## Conventions & gotchas
-
-- ESM-first (`"type": "module"`, `moduleResolution: "bundler"`); avoid CommonJS helpers.
-- Static assets live in `public/`; served as-is by Netlify alongside Nitro functions.
-- Keep `routes/**` and `src/routes/**` behaviors aligned when touching legacy copies; prefer editing only `routes/**` unless necessary.
-- Run `pnpm test:e2e` before significant changes to avoid breaking contract tests.
+- ESM-only (`"type": "module"`, `moduleResolution: "bundler"`); avoid CommonJS helpers. Keep formatting consistent with existing files.
+- When adding APIs: update `routes/api/_openapi.get.ts`, ensure CORS handling matches public vs auth patterns, and keep `routes/**` & `src/routes/**` aligned if touching both.
+- Keep data edits in sync between `data/` and `shared/data/`; tests rely on the runtime `data/` copies.
