@@ -1,8 +1,10 @@
 import { defineEventHandler, handleCors, readBody } from 'h3'
 import { authConfigError, isValidEmail, setSessionCookie, verifyOtp } from '../../server/auth'
 
+const origin = 'https://peace2074.com'
+
 export default defineEventHandler(async (event) => {
-    if (handleCors(event, { origin: '*' })) return
+    if (handleCors(event, { origin, credentials: true })) return
 
     const configErr = authConfigError()
     if (configErr) {
