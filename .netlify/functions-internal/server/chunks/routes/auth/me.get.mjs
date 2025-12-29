@@ -9,7 +9,7 @@ import 'node:path';
 import 'node:crypto';
 
 const origin = ["https://peace2074.com", "https://www.peace2074.com"];
-const allowedHeaders = ["content-type"];
+const allowedHeaders = ["content-type", "authorization", "x-requested-with"];
 const me_get = defineEventHandler((event) => {
   if (handleCors(event, { origin, methods: ["GET", "OPTIONS"], credentials: true, allowHeaders: allowedHeaders })) return;
   const user = currentUserFromEvent(event);

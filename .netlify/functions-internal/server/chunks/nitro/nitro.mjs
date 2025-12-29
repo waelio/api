@@ -4648,6 +4648,7 @@ const _lazy_Asj4D6 = () => import('../routes/api/quran.mjs');
 const _lazy_BFmgUD = () => import('../routes/auth/logout.options.mjs');
 const _lazy_xt5QgJ = () => import('../routes/auth/logout.post.mjs');
 const _lazy_DZ5ijl = () => import('../routes/auth/me.get.mjs');
+const _lazy_0rH0L8 = () => import('../routes/auth/me.options.mjs');
 const _lazy_doT8mw = () => import('../routes/auth/request-otp.options.mjs');
 const _lazy_5rmDai = () => import('../routes/auth/request-otp.post.mjs');
 const _lazy_OPOyxu = () => import('../routes/auth/verify-otp.options.mjs');
@@ -4663,6 +4664,7 @@ const handlers = [
   { route: '/auth/logout', handler: _lazy_BFmgUD, lazy: true, middleware: false, method: "options" },
   { route: '/auth/logout', handler: _lazy_xt5QgJ, lazy: true, middleware: false, method: "post" },
   { route: '/auth/me', handler: _lazy_DZ5ijl, lazy: true, middleware: false, method: "get" },
+  { route: '/auth/me', handler: _lazy_0rH0L8, lazy: true, middleware: false, method: "options" },
   { route: '/auth/request-otp', handler: _lazy_doT8mw, lazy: true, middleware: false, method: "options" },
   { route: '/auth/request-otp', handler: _lazy_5rmDai, lazy: true, middleware: false, method: "post" },
   { route: '/auth/verify-otp', handler: _lazy_OPOyxu, lazy: true, middleware: false, method: "options" },
