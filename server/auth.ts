@@ -8,6 +8,7 @@ export interface SessionUser {
 const SESSION_COOKIE = 'waelio_session'
 const SESSION_DAYS = 7
 const OTP_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
+const COOKIE_DOMAIN = (process.env.AUTH_COOKIE_DOMAIN || '').trim() || undefined
 
 const now = () => Date.now()
 
@@ -80,6 +81,7 @@ export const setSessionCookie = (event: H3Event, user: SessionUser) => {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
+        domain: COOKIE_DOMAIN,
         maxAge: SESSION_DAYS * 24 * 60 * 60,
     })
 }
