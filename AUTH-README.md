@@ -49,6 +49,8 @@ Add the site origins you need in `routes/auth/*.ts` (+ matching `.options.ts`). 
 - Optional for subdomain sharing: `AUTH_COOKIE_DOMAIN` (e.g., `.peace2074.com`).
 - Public base: `AUTH_PUBLIC_URL` (e.g., `https://api.waelio.com`).
 - For Google (when enabled): `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
+- For DeepSeek AI: `DEEPSEEK_API_KEY` (required for `/api/deepseek` endpoint).
+
 
 ## Quick curl (OTP)
 

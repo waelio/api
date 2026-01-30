@@ -87,6 +87,35 @@ export default defineEventHandler(() => {
                     },
                 },
             },
+            '/api/deepseek': {
+                post: {
+                    summary: 'DeepSeek AI chat completion for PEACE2074 virtual guide',
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/DeepSeekRequest' },
+                            },
+                        },
+                    },
+                    responses: {
+                        200: {
+                            description: 'Chat completion response',
+                            content: {
+                                'application/json': {
+                                    schema: { $ref: '#/components/schemas/DeepSeekResponse' },
+                                },
+                            },
+                        },
+                        400: {
+                            description: 'Invalid request',
+                        },
+                        500: {
+                            description: 'DeepSeek API error or not configured',
+                        },
+                    },
+                },
+            },
         },
         components: {
             schemas: {
@@ -129,6 +158,49 @@ export default defineEventHandler(() => {
                         },
                     },
                     required: ['id', 'name', 'type', 'total_verses', 'ayat'],
+                },
+                DeepSeekMessage: {
+                    type: 'object',
+                    properties: {
+                        role: { type: 'string', enum: ['system', 'user', 'assistant'] },
+                        content: { type: 'string' },
+                    },
+                    required: ['role', 'content'],
+                },
+                DeepSeekRequest: {
+                    type: 'object',
+                    properties: {
+                        messages: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/DeepSeekMessage' },
+                        },
+                        temperature: { type: 'number', minimum: 0, maximum: 2 },
+                        max_tokens: { type: 'integer', minimum: 1 },
+                    },
+                    required: ['messages'],
+                },
+                DeepSeekResponse: {
+                    type: 'object',
+                    properties: {
+                        choices: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    message: { $ref: '#/components/schemas/DeepSeekMessage' },
+                                    finish_reason: { type: 'string' },
+                                },
+                            },
+                        },
+                        usage: {
+                            type: 'object',
+                            properties: {
+                                prompt_tokens: { type: 'integer' },
+                                completion_tokens: { type: 'integer' },
+                                total_tokens: { type: 'integer' },
+                            },
+                        },
+                    },
                 },
             },
         },
