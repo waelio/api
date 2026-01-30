@@ -40,6 +40,8 @@ export default defineEventHandler(async (event) => {
     }
 
     const apiKey = process.env.DEEPSEEK_API_KEY
+    const baseUrl = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com'
+
     if (!apiKey) {
         throw createError({
             statusCode: 500,
@@ -58,7 +60,7 @@ export default defineEventHandler(async (event) => {
         }
 
         // Call DeepSeek API
-        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        const response = await fetch(`${baseUrl}/v1/chat/completions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
