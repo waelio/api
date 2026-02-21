@@ -1,8 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Waelio API landing page with health check, Quran and holy names endpoints, plus interactive OpenAPI docs."
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://waelio.com/" />
     <meta name="theme-color" content="#667eea" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
@@ -49,15 +55,23 @@
         box-sizing: border-box;
       }
       body {
-        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", Roboto, sans-serif;
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
         background: var(--bg);
         color: var(--text);
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background 200ms ease, color 200ms ease;
+        transition:
+          background 200ms ease,
+          color 200ms ease;
       }
       .container {
         background: var(--panel);
@@ -67,7 +81,9 @@
         max-width: 1100px;
         width: 92%;
         border: 1px solid var(--border);
-        transition: background 200ms ease, color 200ms ease,
+        transition:
+          background 200ms ease,
+          color 200ms ease,
           border-color 200ms ease;
       }
       h1 {
@@ -92,7 +108,9 @@
         color: var(--text);
         text-decoration: none;
         border: 1px solid var(--border);
-        transition: transform 120ms ease, box-shadow 120ms ease;
+        transition:
+          transform 120ms ease,
+          box-shadow 120ms ease;
       }
       .link-card:hover {
         transform: translateY(-1px);
@@ -152,7 +170,9 @@
         background: var(--panel);
         color: var(--text);
         cursor: pointer;
-        transition: background 150ms ease, color 150ms ease,
+        transition:
+          background 150ms ease,
+          color 150ms ease,
           border-color 150ms ease;
       }
       .theme-toggle:hover {
