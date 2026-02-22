@@ -1,5 +1,17 @@
 import { defineEventHandler, handleCors, readBody, createError } from 'h3'
 
+const origin = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://peace2074.com',
+    'https://www.peace2074.com',
+    'https://peace2074.netlify.app',
+    'https://waelio.com',
+    'https://www.waelio.com',
+    'https://waelio.netlify.app',
+]
+const allowedHeaders = ['content-type']
+
 interface Message {
     role: 'system' | 'user' | 'assistant'
     content: string
@@ -31,13 +43,7 @@ interface DeepSeekResponse {
  * Proxy to DeepSeek Chat API for PEACE2074 virtual guide
  */
 export default defineEventHandler(async (event) => {
-    if (handleCors(event, {
-        origin: ['https://peace2074.com', 'https://www.peace2074.com'],
-        credentials: true,
-        methods: ['POST', 'OPTIONS']
-    })) {
-        return
-    }
+    if (handleCors(event, { origin, methods: ['POST', 'OPTIONS'], credentials: true, allowHeaders: allowedHeaders })) return
 
     const apiKey = process.env.DEEPSEEK_API_KEY
     const baseUrl = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com'
