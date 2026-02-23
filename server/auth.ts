@@ -6,7 +6,8 @@ export interface SessionUser {
 }
 
 const SESSION_COOKIE = 'waelio_session'
-const SESSION_DAYS = 7
+const SESSION_SHORT_HOURS = 24 // 1 day when not remembered
+const SESSION_LONG_DAYS = 30 // 30 days when remembered
 const OTP_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
 const COOKIE_DOMAIN = (process.env.AUTH_COOKIE_DOMAIN || '').trim() || undefined
 
@@ -54,8 +55,11 @@ export const verifyOtp = (email: string, code: string, at = now()): boolean => {
     return windows.some((ts) => generateOtp(email, ts) === trimmed)
 }
 
-export const encodeSession = (user: SessionUser): string => {
-    const exp = now() + SESSION_DAYS * 24 * 60 * 60 * 1000
+export const encodeSession = (user: SessionUser, rememberMe = false): string => {
+    const duration = rememberMe
+        ? SESSION_LONG_DAYS * 24 * 60 * 60 * 1000
+        : SESSION_SHORT_HOURS * 60 * 60 * 1000
+    const exp = now() + duration
     const payload = `${user.email}:${exp}`
     const sig = sign(payload)
     return `${payload}:${sig}`
@@ -74,16 +78,24 @@ export const decodeSession = (token?: string | null): SessionUser | null => {
     return { email }
 }
 
-export const setSessionCookie = (event: H3Event, user: SessionUser) => {
-    const token = encodeSession(user)
-    setCookie(event, SESSION_COOKIE, token, {
+export const setSessionCookie = (event: H3Event, user: SessionUser, rememberMe = false) => {
+    const token = encodeSession(user, rememberMe)
+    const cookieOptions: any = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
         domain: COOKIE_DOMAIN,
-        maxAge: SESSION_DAYS * 24 * 60 * 60,
-    })
+    }
+
+    // If remember me, set long maxAge. Otherwise, session-only (no maxAge = expires on browser close)
+    if (rememberMe) {
+        cookieOptions.maxAge = SESSION_LONG_DAYS * 24 * 60 * 60
+    } else {
+        cookieOptions.maxAge = SESSION_SHORT_HOURS * 60 * 60
+    }
+
+    setCookie(event, SESSION_COOKIE, token, cookieOptions)
 }
 
 export const clearSessionCookie = (event: H3Event) => {

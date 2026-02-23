@@ -132,6 +132,43 @@ export default defineEventHandler(() => {
                     },
                 },
             },
+            '/auth/verify-otp': {
+                post: {
+                    summary: 'Verify OTP code and create session',
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        email: { type: 'string', format: 'email' },
+                                        code: { type: 'string', minLength: 6, maxLength: 6 },
+                                        rememberMe: {
+                                            type: 'boolean',
+                                            description: 'Keep user logged in for 30 days (default: 24 hours)',
+                                            default: false
+                                        },
+                                    },
+                                    required: ['email', 'code'],
+                                },
+                            },
+                        },
+                    },
+                    responses: {
+                        200: {
+                            description: 'Login successful',
+                            content: {
+                                'application/json': {
+                                    schema: { $ref: '#/components/schemas/UserProfile' },
+                                },
+                            },
+                        },
+                        400: { description: 'Invalid email or code' },
+                        503: { description: 'Auth not configured' },
+                    },
+                },
+            },
             '/auth/profile': {
                 put: {
                     summary: 'Update user profile',

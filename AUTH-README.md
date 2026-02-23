@@ -63,18 +63,29 @@ curl -i -X POST https://api.waelio.com/auth/request-otp \
   --cookie-jar cookies.txt \
   -d '{"email":"you@example.com"}'
 
-# 2) Verify OTP
+# 2) Verify OTP (with Remember Me)
 curl -i -X POST https://api.waelio.com/auth/verify-otp \
   -H "Origin: https://peace2074.com" \
   -H "Content-Type: application/json" \
   --cookie-jar cookies.txt --cookie cookies.txt \
-  -d '{"email":"you@example.com","code":"123456"}'
+  -d '{"email":"you@example.com","code":"123456","rememberMe":true}'
+
+# Without Remember Me (24-hour session):
+# -d '{"email":"you@example.com","code":"123456","rememberMe":false}'
 
 # 3) Check session
 curl -i -X GET https://api.waelio.com/auth/me \
   -H "Origin: https://peace2074.com" \
   --cookie-jar cookies.txt --cookie cookies.txt
 ```
+
+## Session Duration (Remember Me)
+
+**Industry-standard behavior:**
+- **rememberMe: false** (default) → Session lasts **24 hours**
+- **rememberMe: true** → Session lasts **30 days**
+
+Both use secure HttpOnly cookies with the same security features.
 
 ## Gotchas
 

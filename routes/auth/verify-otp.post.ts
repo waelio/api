@@ -24,9 +24,10 @@ export default defineEventHandler(async (event) => {
         return { error: true, message: configErr }
     }
 
-    const body = await readBody<{ email?: string; code?: string }>(event)
+    const body = await readBody<{ email?: string; code?: string; rememberMe?: boolean }>(event)
     const email = (body?.email || '').trim().toLowerCase()
     const code = (body?.code || '').trim()
+    const rememberMe = body?.rememberMe ?? false
 
     if (!email || !isValidEmail(email)) {
         event.node.res.statusCode = 400
@@ -54,7 +55,7 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        setSessionCookie(event, { email })
+        setSessionCookie(event, { email }, rememberMe)
 
         return {
             ok: true,
@@ -69,7 +70,7 @@ export default defineEventHandler(async (event) => {
     } catch (dbError) {
         console.error('Database error during login:', dbError)
         // Still allow login even if DB fails (fallback to session-only)
-        setSessionCookie(event, { email })
+        setSessionCookie(event, { email }, rememberMe)
         return { ok: true, user: { email } }
     }
 })
