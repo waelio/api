@@ -1,5 +1,6 @@
 import { defineEventHandler, handleCors, readBody } from 'h3'
 import { authConfigError, generateOtp, isValidEmail } from '../../server/auth'
+import { sendOtpEmail, isEmailConfigured } from '../../server/email'
 
 const origin = [
     'http://localhost:3000',
@@ -32,12 +33,39 @@ export default defineEventHandler(async (event) => {
 
     const code = generateOtp(email)
 
-    // TODO: integrate email provider. For now, we only expose the code in non-production
-    // to allow local/manual delivery. In production, this will only log server-side.
-    if (process.env.NODE_ENV !== 'production') {
-        return { ok: true, devCode: code, ttlSeconds: 600 }
+    // Send email if SMTP is configured
+    const emailConfigured = isEmailConfigured()
+    let emailSent = false
+
+    if (emailConfigured) {
+        emailSent = await sendOtpEmail(email, code)
+        if (!emailSent) {
+            console.error(`[auth] Failed to send OTP email to ${email}`)
+        }
     }
 
-    console.info(`[auth] OTP generated for ${email}`)
-    return { ok: true, ttlSeconds: 600 }
+    // In development, return the code for easy testing
+    if (process.env.NODE_ENV !== 'production') {
+        return {
+            ok: true,
+            devCode: code,
+            ttlSeconds: 600,
+            emailSent,
+            emailConfigured
+        }
+    }
+
+    // In production, only confirm if email was sent
+    if (emailConfigured && emailSent) {
+        console.info(`[auth] OTP sent via email to ${email}`)
+        return { ok: true, ttlSeconds: 600 }
+    }
+
+    // Fallback: email not configured in production
+    console.warn(`[auth] OTP generated for ${email} but email not configured`)
+    return {
+        ok: true,
+        ttlSeconds: 600,
+        warning: 'Email delivery not configured'
+    }
 })

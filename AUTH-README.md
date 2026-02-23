@@ -51,6 +51,29 @@ Add the site origins you need in `routes/auth/*.ts` (+ matching `.options.ts`). 
 - For Google (when enabled): `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
 - For DeepSeek AI: `DEEPSEEK_API_KEY` (required for `/api/deepseek` endpoint).
 - For user profiles: `MONGODB_URI` (MongoDB connection string for user data).
+- For email OTP delivery: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` (optional).
+
+### Email Configuration
+
+**Gmail Example:**
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password  # Generate at https://myaccount.google.com/apppasswords
+SMTP_FROM="Waelio <noreply@waelio.com>"
+```
+
+**SendGrid Example:**
+```bash
+SMTP_HOST=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_USER=apikey
+SMTP_PASS=your-sendgrid-api-key
+SMTP_FROM="Waelio <noreply@waelio.com>"
+```
+
+**Note:** If SMTP is not configured, OTP codes will only be logged server-side (dev mode returns code in response).
 
 
 ## Quick curl (OTP)

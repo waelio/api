@@ -15,7 +15,7 @@ const origin = [
 ]
 const allowedHeaders = ['content-type', 'authorization', 'x-requested-with']
 
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
     if (handleCors(event, { origin, methods: ['GET', 'OPTIONS'], credentials: true, allowHeaders: allowedHeaders })) return
 
     const sessionUser = currentUserFromEvent(event)

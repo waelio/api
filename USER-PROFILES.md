@@ -7,7 +7,9 @@ The Waelio API now includes full user profile management with MongoDB integratio
 ## Features
 
 ### 1. **User Authentication with Profiles**
+
 When users log in via OTP, a user profile is automatically created in MongoDB with:
+
 - Email (unique identifier)
 - Auto-generated username
 - First name & last name (optional)
@@ -18,6 +20,7 @@ When users log in via OTP, a user profile is automatically created in MongoDB wi
 ### 2. **Profile Management**
 
 #### Get Current User
+
 ```bash
 GET /auth/me
 
@@ -38,6 +41,7 @@ GET /auth/me
 ```
 
 #### Update Profile
+
 ```bash
 PUT /auth/profile
 Content-Type: application/json
@@ -52,6 +56,7 @@ Content-Type: application/json
 ```
 
 **Username Requirements:**
+
 - 3-30 characters
 - Letters, numbers, underscore, and dash only
 - Must be unique across all users
@@ -59,6 +64,7 @@ Content-Type: application/json
 ### 3. **Database Setup**
 
 #### Environment Variable
+
 ```bash
 MONGODB_URI='mongodb://localhost:27017/waelio'
 # Or for MongoDB Atlas:
@@ -66,6 +72,7 @@ MONGODB_URI='mongodb://localhost:27017/waelio'
 ```
 
 #### User Schema
+
 ```typescript
 {
   email: string (required, unique)
@@ -83,12 +90,14 @@ MONGODB_URI='mongodb://localhost:27017/waelio'
 ## API Endpoints
 
 ### Authentication
+
 - `POST /auth/request-otp` - Request OTP code
 - `POST /auth/verify-otp` - Verify OTP and create session **+ user profile**
 - `GET /auth/me` - Get current user profile (from database)
 - `POST /auth/logout` - Clear session
 
 ### Profile Management
+
 - `PUT /auth/profile` - Update username, first_name, last_name
 
 ## Community Interaction Ready
@@ -104,6 +113,7 @@ With user profiles stored in the database, you can now build:
 ## Development Setup
 
 1. **Install MongoDB locally**:
+
    ```bash
    # macOS
    brew install mongodb-community
@@ -111,37 +121,40 @@ With user profiles stored in the database, you can now build:
    ```
 
 2. **Update .env**:
+
    ```bash
    MONGODB_URI='mongodb://localhost:27017/waelio'
    ```
 
 3. **Install dependencies**:
+
    ```bash
    pnpm install
    ```
 
 4. **Test the endpoints**:
+
    ```bash
    # Request OTP
-   curl -X POST http://localhost:4000/auth/request-otp \
+   curl -X POST http://localhost:3000/auth/request-otp \
      -H "Origin: https://peace2074.com" \
      -H "Content-Type: application/json" \
      -d '{"email":"test@example.com"}'
 
    # Verify OTP (creates user profile)
-   curl -X POST http://localhost:4000/auth/verify-otp \
+   curl -X POST http://localhost:3000/auth/verify-otp \
      -H "Origin: https://peace2074.com" \
      -H "Content-Type: application/json" \
      --cookie-jar cookies.txt \
      -d '{"email":"test@example.com","code":"123456"}'
 
    # Get profile
-   curl http://localhost:4000/auth/me \
+   curl http://localhost:3000/auth/me \
      -H "Origin: https://peace2074.com" \
      --cookie cookies.txt
 
    # Update profile
-   curl -X PUT http://localhost:4000/auth/profile \
+   curl -X PUT http://localhost:3000/auth/profile \
      -H "Origin: https://peace2074.com" \
      -H "Content-Type: application/json" \
      --cookie cookies.txt \
@@ -151,7 +164,9 @@ With user profiles stored in the database, you can now build:
 ## Production Deployment
 
 ### Netlify Environment Variables
+
 Add to Netlify dashboard:
+
 ```
 MONGODB_URI=mongodb+srv://your-atlas-connection-string
 AUTH_SECRET=your-production-secret
@@ -159,6 +174,7 @@ DEEPSEEK_API_KEY=your-deepseek-key
 ```
 
 ### MongoDB Atlas Setup
+
 1. Create cluster at [mongodb.com/cloud/atlas](https://mongodb.com/cloud/atlas)
 2. Create database user
 3. Whitelist Netlify IP or use `0.0.0.0/0` for development
