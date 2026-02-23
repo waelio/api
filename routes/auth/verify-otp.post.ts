@@ -1,5 +1,7 @@
 import { defineEventHandler, handleCors, readBody } from 'h3'
 import { authConfigError, isValidEmail, setSessionCookie, verifyOtp } from '../../server/auth'
+import { connectDB } from '../../server/db'
+import User from '../../models/user'
 
 const origin = [
     'http://localhost:3000',
@@ -36,7 +38,38 @@ export default defineEventHandler(async (event) => {
         return { error: true, message: 'Invalid or expired code' }
     }
 
-    setSessionCookie(event, { email })
+    // Create or update user in database
+    try {
+        await connectDB()
 
-    return { ok: true, user: { email } }
+        let user = await User.findOne({ email })
+        if (!user) {
+            // Create new user with email as username initially
+            const username = email.split('@')[0] + '_' + Date.now().toString(36)
+            user = await User.create({
+                email,
+                username,
+                password: 'OTP_AUTH', // Placeholder for OTP-based auth
+                verified: true,
+            })
+        }
+
+        setSessionCookie(event, { email })
+
+        return {
+            ok: true,
+            user: {
+                email: user.email,
+                username: user.username,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                role: user.role,
+            },
+        }
+    } catch (dbError) {
+        console.error('Database error during login:', dbError)
+        // Still allow login even if DB fails (fallback to session-only)
+        setSessionCookie(event, { email })
+        return { ok: true, user: { email } }
+    }
 })

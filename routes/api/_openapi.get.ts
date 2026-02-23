@@ -116,6 +116,48 @@ export default defineEventHandler(() => {
                     },
                 },
             },
+            '/auth/me': {
+                get: {
+                    summary: 'Get current user profile',
+                    responses: {
+                        200: {
+                            description: 'User profile',
+                            content: {
+                                'application/json': {
+                                    schema: { $ref: '#/components/schemas/UserProfile' },
+                                },
+                            },
+                        },
+                        401: { description: 'Unauthorized' },
+                    },
+                },
+            },
+            '/auth/profile': {
+                put: {
+                    summary: 'Update user profile',
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/ProfileUpdate' },
+                            },
+                        },
+                    },
+                    responses: {
+                        200: {
+                            description: 'Updated profile',
+                            content: {
+                                'application/json': {
+                                    schema: { $ref: '#/components/schemas/UserProfile' },
+                                },
+                            },
+                        },
+                        400: { description: 'Invalid input' },
+                        401: { description: 'Unauthorized' },
+                        409: { description: 'Username already taken' },
+                    },
+                },
+            },
         },
         components: {
             schemas: {
@@ -200,6 +242,33 @@ export default defineEventHandler(() => {
                                 total_tokens: { type: 'integer' },
                             },
                         },
+                    },
+                },
+                UserProfile: {
+                    type: 'object',
+                    properties: {
+                        ok: { type: 'boolean' },
+                        user: {
+                            type: 'object',
+                            properties: {
+                                email: { type: 'string' },
+                                username: { type: 'string' },
+                                first_name: { type: 'string' },
+                                last_name: { type: 'string' },
+                                role: { type: 'string' },
+                                verified: { type: 'boolean' },
+                                createdAt: { type: 'string', format: 'date-time' },
+                                updatedAt: { type: 'string', format: 'date-time' },
+                            },
+                        },
+                    },
+                },
+                ProfileUpdate: {
+                    type: 'object',
+                    properties: {
+                        username: { type: 'string', minLength: 3, maxLength: 30 },
+                        first_name: { type: 'string' },
+                        last_name: { type: 'string' },
                     },
                 },
             },
