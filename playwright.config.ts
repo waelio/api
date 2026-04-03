@@ -5,11 +5,11 @@ export default defineConfig({
     timeout: 30_000,
     retries: 0,
     use: {
-        baseURL: 'http://localhost:3001',
+        baseURL: 'http://localhost:4000',
     },
     webServer: {
         command: 'pnpm dev:api',
-        url: 'http://localhost:3001',
+        url: 'http://localhost:4000',
         reuseExistingServer: true,
         timeout: 120_000,
     },
