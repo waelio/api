@@ -5,9 +5,6 @@
   "description": "Waelio API - Nitro TypeScript with OpenAPI",
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
-    "ignoredBuiltDependencies": [
-      "esbuild"
-    ],
     "onlyBuiltDependencies": [
       "@parcel/watcher"
     ]
@@ -16,7 +13,8 @@
     "dev": "pnpm dev:api & pnpm dev:ui",
     "dev:api": "nitro dev --port 4000",
     "dev:ui": "cd frontend && pnpm dev",
-    "build": "nitro build",
+    "build": "pnpm build:sw && nitro build",
+    "build:sw": "esbuild public/sw.ts --outfile=public/sw.js --bundle --minify --target=es2020 --format=iife",
     "start": "node .output/server/index.mjs",
     "preview": "node .output/server/index.mjs",
     "lint": "eslint src --ext .ts",
@@ -36,6 +34,7 @@
     "@types/nodemailer": "^6.4.17",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
+    "esbuild": "^0.24.2",
     "eslint": "^8.57.1",
     "typescript": "^5.9.3"
   }

@@ -4,5 +4,6 @@ dist
 .nitro
 .cache
 .output
+.netlify
 .env
 .env.local
